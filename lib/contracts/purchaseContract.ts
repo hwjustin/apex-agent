@@ -1,7 +1,7 @@
 /**
  * DemoPurchase Contract Configuration
  *
- * Contract Address: 0xfb97Cbc69FeAab186B8A19E884c2be07f64bc12e (Base Sepolia)
+ * Contract on Base Mainnet (address configured in lib/config/purchase.ts)
  * This contract allows users to purchase products from advertisers.
  */
 

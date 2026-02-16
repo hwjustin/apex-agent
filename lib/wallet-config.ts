@@ -2,7 +2,7 @@
 
 import { createAppKit } from "@reown/appkit/react";
 import { WagmiAdapter } from "@reown/appkit-adapter-wagmi";
-import { baseSepolia } from "@reown/appkit/networks";
+import { base } from "@reown/appkit/networks";
 import type { AppKitNetwork } from "@reown/appkit/networks";
 
 // WalletConnect project ID
@@ -15,7 +15,7 @@ const metadata = {
   icons: ["/apex-logo-new.png"],
 };
 
-const networks: [AppKitNetwork, ...AppKitNetwork[]] = [baseSepolia];
+const networks: [AppKitNetwork, ...AppKitNetwork[]] = [base];
 
 export const wagmiAdapter = new WagmiAdapter({
   networks,
@@ -28,7 +28,7 @@ createAppKit({
   networks,
   projectId,
   metadata,
-  defaultNetwork: baseSepolia,
+  defaultNetwork: base,
   features: {
     analytics: false,
     email: false,

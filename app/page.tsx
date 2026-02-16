@@ -67,7 +67,7 @@ function AgentActionCard({ action }: { action: AgentAction }) {
       )}
       {action.txHash && (
         <a
-          href={`https://sepolia.basescan.org/tx/${action.txHash}`}
+          href={`https://basescan.org/tx/${action.txHash}`}
           target="_blank"
           rel="noopener noreferrer"
           className="mt-1 inline-block text-[11px] text-blue-600 hover:text-blue-800 font-mono underline break-all"
@@ -253,7 +253,7 @@ export default function Home() {
     const successMessage: Message = {
       id: nextId,
       role: 'ai',
-      content: `Purchase successful! Your transaction has been confirmed. [View on BaseScan](https://sepolia.basescan.org/tx/${txHash})`,
+      content: `Purchase successful! Your transaction has been confirmed. [View on BaseScan](https://basescan.org/tx/${txHash})`,
     };
     setMessages(prev => [...prev, successMessage]);
     setNextId(id => id + 1);
@@ -411,12 +411,6 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="rounded-3xl px-3 py-2 hover:bg-muted/50">
-            <div className="font-semibold">Onboarding flow</div>
-            <div className="mt-1 line-clamp-1 text-muted-foreground">
-              Help me design an AI agent…
-            </div>
-          </div>
         </div>
 
         {/* Wallet Connection & Status */}

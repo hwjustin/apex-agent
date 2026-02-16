@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
-import { createPublicClient, createWalletClient, http, parseAbiParameters, encodeAbiParameters } from "viem";
+import { createPublicClient, createWalletClient, http, parseAbiParameters, encodeAbiParameters, encodeFunctionData, type Hex } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { baseSepolia } from "viem/chains";
+import { base } from "viem/chains";
+import { Attribution } from "ox/erc8021";
 import { AD_REGISTRY_ADDRESS, AD_REGISTRY_ABI } from "@/lib/contracts/adRegistry";
 
 export const runtime = "nodejs";
@@ -26,7 +27,7 @@ export async function POST(req: Request) {
 
     // Get publisher private key from environment
     const publisherPrivateKey = process.env.PUBLISHER_PRIVATE_KEY as `0x${string}`;
-    const rpcUrl = process.env.RPC_URL || "https://sepolia.base.org";
+    const rpcUrl = process.env.RPC_URL || "https://mainnet.base.org";
 
     if (!publisherPrivateKey || publisherPrivateKey === "0x0000000000000000000000000000000000000000000000000000000000000000") {
       console.error("Publisher private key not configured");
@@ -38,20 +39,20 @@ export async function POST(req: Request) {
 
     // Create clients
     const publicClient = createPublicClient({
-      chain: baseSepolia,
+      chain: base,
       transport: http(rpcUrl),
     });
 
     const walletClient = createWalletClient({
       account: publisherAccount,
-      chain: baseSepolia,
+      chain: base,
       transport: http(rpcUrl),
     });
 
     // Prepare transaction parameters
     const campaignIdBigInt = BigInt(campaignId);
-    const publisherId = BigInt(2); // Registered publisher ID
-    const startTime = BigInt(Math.floor(Date.now() / 1000));
+    const publisherId = BigInt(17863); // Registered publisher ID on Base Mainnet
+    const startTime = BigInt(Math.floor(Date.now() / 1000) - 5); // 5s buffer to avoid clock skew with block.timestamp
 
     // Encode metadata (user's wallet address)
     // Format as JSON with userWallet field for validator attribution
@@ -102,12 +103,19 @@ export async function POST(req: Request) {
       }
     }
 
-    // Send transaction
-    const hash = await walletClient.writeContract({
-      address: AD_REGISTRY_ADDRESS,
+    // Encode calldata and append ERC-8021 builder code suffix for Base attribution
+    const BUILDER_CODE_SUFFIX = Attribution.toDataSuffix({ codes: ["bc_koehzjn1"] });
+    const calldata = encodeFunctionData({
       abi: AD_REGISTRY_ABI,
       functionName: 'createAd',
       args: [campaignIdBigInt, publisherId, startTime, metadataBytes],
+    });
+    const dataWithAttribution = (calldata + BUILDER_CODE_SUFFIX.slice(2)) as Hex;
+
+    // Send transaction with builder code attribution
+    const hash = await walletClient.sendTransaction({
+      to: AD_REGISTRY_ADDRESS,
+      data: dataWithAttribution,
     });
 
     console.log("[CreateAd API] 📤 Transaction sent:", hash);
@@ -122,7 +130,7 @@ export async function POST(req: Request) {
       hash,
       status: receipt.status,
       blockNumber: receipt.blockNumber.toString(),
-      explorer: `https://sepolia.basescan.org/tx/${hash}`,
+      explorer: `https://basescan.org/tx/${hash}`,
     });
 
     if (receipt.status === 'reverted') {

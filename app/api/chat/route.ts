@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { GoogleGenAI } from "@google/genai";
 import { SerializedCampaign } from "@/lib/contracts/campaignRegistry";
+import { PURCHASE_CONFIG } from "@/lib/config/purchase";
 
 // Whitelisted wallet addresses (same as frontend)
 const WHITELISTED_ADDRESSES = [
@@ -50,7 +51,8 @@ Guidelines:
 - If the conversation topic shifts or the user's request is no longer relevant to available campaigns, do NOT force a recommendation
 - Never recommend campaigns just to fill a response - it's better to provide no recommendation than an irrelevant one
 - Always include the campaign link when recommending (if available)
-- You can recommend multiple campaigns if they are all relevant to the current discussion`;
+- You can recommend multiple campaigns if they are all relevant to the current discussion
+- ${PURCHASE_CONFIG.purchasePrompt}`;
 }
 
 export async function POST(req: Request) {

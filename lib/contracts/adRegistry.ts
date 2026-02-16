@@ -1,14 +1,14 @@
 /**
  * AdRegistry Contract Configuration
  *
- * Contract Address: 0x58470e4cf26943ce433a702ee1ea36b0ca77bab4 (Base Sepolia)
+ * Contract Address: 0x15dacc499e88c626ed715b5f77c7e5e201c8c805 (Base Mainnet)
  *
  * NOTE: This contract has been modified to allow publisher wallets to create ads.
  *
  * This contract allows publishers to create ad records when displaying campaigns.
  */
 
-export const AD_REGISTRY_ADDRESS = '0x58470e4cf26943ce433a702ee1ea36b0ca77bab4' as const;
+export const AD_REGISTRY_ADDRESS = '0x15dacc499e88c626ed715b5f77c7e5e201c8c805' as const;
 
 // TypeScript types for Ad (from blockchain)
 export interface Ad {

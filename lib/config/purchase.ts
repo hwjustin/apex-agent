@@ -5,11 +5,11 @@
  */
 
 export const PURCHASE_CONFIG = {
-  // Contract address - DemoPurchase contract on Base Sepolia
-  contractAddress: '0xe9a8c0a1f5ac4788840d8820a10555f9da8bf38d' as `0x${string}`,
+  // Contract address - DemoPurchase contract on Base Mainnet
+  contractAddress: '0x7f34ec8b18e05af38d771cb50382fa15fc30a1d1' as `0x${string}`,
 
-  // USDC token address on Base Sepolia
-  usdcAddress: '0x036CbD53842c5426634e7929541eC2318f3dCF7e' as `0x${string}`,
+  // USDC token address on Base Mainnet
+  usdcAddress: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' as `0x${string}`,
 
   // Patterns to detect user wants to buy (case-insensitive)
   affirmativePatterns: [
@@ -28,8 +28,8 @@ export const PURCHASE_CONFIG = {
   // AI prompt addition - tells AI to ask about purchase
   purchasePrompt: `When you recommend a product or service, always ask the user: "Would you like to purchase this?" to give them the option to proceed with a transaction.`,
 
-  // BaseScan URL for transaction links (Base Sepolia)
-  explorerBaseUrl: 'https://sepolia.basescan.org/tx/',
+  // BaseScan URL for transaction links (Base Mainnet)
+  explorerBaseUrl: 'https://basescan.org/tx/',
 };
 
 /**

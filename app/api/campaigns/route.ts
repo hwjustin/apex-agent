@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createPublicClient, http, fromHex } from "viem";
-import { baseSepolia } from "viem/chains";
+import { base } from "viem/chains";
 import {
   CAMPAIGN_REGISTRY_ADDRESS,
   CAMPAIGN_REGISTRY_ABI,
@@ -16,10 +16,10 @@ let cachedCampaigns: SerializedCampaign[] | null = null;
 let cacheTimestamp: number = 0;
 const CACHE_TTL_MS = 60 * 1000; // 1 minute
 
-// Create public client for Base Sepolia (no wallet needed)
+// Create public client for Base Mainnet (no wallet needed)
 const publicClient = createPublicClient({
-  chain: baseSepolia,
-  transport: http(process.env.RPC_URL || "https://sepolia.base.org"),
+  chain: base,
+  transport: http(process.env.RPC_URL || "https://mainnet.base.org"),
 });
 
 function getCampaignStatus(campaign: Campaign): "active" | "scheduled" | "ended" {

@@ -8,12 +8,17 @@
 
 import { useState } from 'react';
 import { useWalletClient, usePublicClient } from 'wagmi';
+import { encodeFunctionData, type Hex } from 'viem';
+import { Attribution } from 'ox/erc8021';
 import {
   PURCHASE_CONTRACT_ADDRESS,
   PURCHASE_CONTRACT_ABI,
   ProductDetails,
 } from '@/lib/contracts/purchaseContract';
 import { isPurchaseContractConfigured, PURCHASE_CONFIG } from '@/lib/config/purchase';
+
+// ERC-8021 builder code suffix for Base attribution
+const BUILDER_CODE_SUFFIX = Attribution.toDataSuffix({ codes: ["bc_koehzjn1"] });
 
 export type PurchaseStatus = 'idle' | 'approving' | 'pending' | 'confirming' | 'success' | 'error';
 
@@ -194,12 +199,18 @@ export function usePurchase(): UsePurchaseReturn {
         }
       }
 
-      // Send the purchase transaction (no ETH value - pays in USDC)
-      const hash = await walletClient.writeContract({
-        address: PURCHASE_CONTRACT_ADDRESS,
+      // Encode calldata and append ERC-8021 builder code suffix
+      const calldata = encodeFunctionData({
         abi: PURCHASE_CONTRACT_ABI,
         functionName: 'purchaseProduct',
         args: [productId],
+      });
+      const dataWithAttribution = (calldata + BUILDER_CODE_SUFFIX.slice(2)) as Hex;
+
+      // Send the purchase transaction with builder code attribution (no ETH value - pays in USDC)
+      const hash = await walletClient.sendTransaction({
+        to: PURCHASE_CONTRACT_ADDRESS,
+        data: dataWithAttribution,
       });
 
       console.log('[Purchase] Transaction sent:', hash);
