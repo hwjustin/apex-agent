@@ -9,6 +9,9 @@ import { Input } from "@/components/ui/input";
 import { SerializedCampaign } from "@/lib/contracts/campaignRegistry";
 import { WalletButton } from "@/components/WalletButton";
 import { useAccount } from "wagmi";
+import { PurchaseCard } from "@/components/PurchaseCard";
+import { ProductDetails } from "@/lib/contracts/purchaseContract";
+import { detectAffirmativeResponse } from "@/lib/config/purchase";
 
 // Whitelisted wallet addresses that can send messages
 const WHITELISTED_ADDRESSES = [
@@ -86,6 +89,11 @@ export default function Home() {
   const [campaigns, setCampaigns] = useState<SerializedCampaign[]>([]);
   const [hasCreatedAdForCampaign, setHasCreatedAdForCampaign] = useState<Record<string, boolean>>({});
 
+  // Purchase flow state
+  const [showPurchaseCard, setShowPurchaseCard] = useState(false);
+  const [pendingPurchase, setPendingPurchase] = useState<ProductDetails | null>(null);
+  const [lastRecommendedCampaign, setLastRecommendedCampaign] = useState<SerializedCampaign | null>(null);
+
   // Wallet connection (user's wallet for authentication only)
   const { address: walletAddress, isConnected: isWalletConnected } = useAccount();
 
@@ -98,8 +106,13 @@ export default function Home() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Fetch campaigns on page load
+  // Fetch campaigns only when a whitelisted wallet connects
   useEffect(() => {
+    if (!isWhitelisted) {
+      setCampaigns([]);
+      return;
+    }
+
     const fetchCampaigns = async () => {
       const msgId = ++actionIdRef.current;
       const pendingAction: AgentAction = {
@@ -152,7 +165,7 @@ export default function Home() {
     };
 
     fetchCampaigns();
-  }, []);
+  }, [isWhitelisted]);
 
   // Helper function to detect if AI recommended a campaign
   function detectRecommendedCampaign(aiMessage: string, campaigns: SerializedCampaign[]): SerializedCampaign | null {
@@ -221,10 +234,75 @@ export default function Home() {
     }
   }
 
+  // Convert campaign to product details for purchase
+  function campaignToProductDetails(campaign: SerializedCampaign): ProductDetails {
+    const spec = campaign.spec;
+    return {
+      productId: '1', // Using product ID 1 from DemoPurchase contract
+      campaignId: campaign.campaignId,
+      title: spec?.title || `Campaign #${campaign.campaignId}`,
+      description: spec?.description || 'No description available',
+      price: '1.00', // Placeholder - actual price fetched from contract
+      currency: 'USDC',
+      targetUrl: spec?.targetUrl,
+    };
+  }
+
+  // Handle successful purchase
+  function handlePurchaseSuccess(txHash: string) {
+    const successMessage: Message = {
+      id: nextId,
+      role: 'ai',
+      content: `Purchase successful! Your transaction has been confirmed. [View on BaseScan](https://sepolia.basescan.org/tx/${txHash})`,
+    };
+    setMessages(prev => [...prev, successMessage]);
+    setNextId(id => id + 1);
+    setShowPurchaseCard(false);
+    setPendingPurchase(null);
+    setLastRecommendedCampaign(null);
+  }
+
+  // Handle purchase error
+  function handlePurchaseError(error: Error) {
+    const errorMessage: Message = {
+      id: nextId,
+      role: 'ai',
+      content: `Purchase could not be completed: ${error.message}. Would you like to try again?`,
+    };
+    setMessages(prev => [...prev, errorMessage]);
+    setNextId(id => id + 1);
+  }
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     const trimmed = input.trim();
     if (!trimmed || isLoading || !isWhitelisted) return;
+
+    // Check if user gave an affirmative response to purchase
+    if (detectAffirmativeResponse(trimmed) && lastRecommendedCampaign) {
+      const userMessage: Message = {
+        id: nextId,
+        role: "user",
+        content: trimmed,
+      };
+      setMessages((prev) => [...prev, userMessage]);
+      setNextId((id) => id + 1);
+      setInput("");
+
+      // Convert campaign to product details and show purchase modal
+      const productDetails = campaignToProductDetails(lastRecommendedCampaign);
+      setPendingPurchase(productDetails);
+      setShowPurchaseCard(true);
+
+      const confirmMessage: Message = {
+        id: nextId + 1,
+        role: 'ai',
+        content: `Opening purchase confirmation for **${productDetails.title}**...`,
+      };
+      setMessages((prev) => [...prev, confirmMessage]);
+      setNextId((id) => id + 2);
+      return;
+    }
 
     const userMessage: Message = {
       id: nextId,
@@ -253,6 +331,8 @@ export default function Home() {
       const recommendedCampaign = detectRecommendedCampaign(aiText, campaigns);
 
       if (recommendedCampaign) {
+        // Track the last recommended campaign for purchase flow
+        setLastRecommendedCampaign(recommendedCampaign);
         console.log('\nAI recommended campaign:', recommendedCampaign.spec?.title || `Campaign #${recommendedCampaign.campaignId}`);
 
         if (!hasCreatedAdForCampaign[recommendedCampaign.campaignId] && walletAddress) {
@@ -476,6 +556,21 @@ export default function Home() {
           </form>
         </main>
       </div>
+
+      {/* Purchase Card Modal */}
+      {pendingPurchase && (
+        <PurchaseCard
+          product={pendingPurchase}
+          isOpen={showPurchaseCard}
+          onClose={() => {
+            setShowPurchaseCard(false);
+            setPendingPurchase(null);
+            setLastRecommendedCampaign(null);
+          }}
+          onSuccess={handlePurchaseSuccess}
+          onError={handlePurchaseError}
+        />
+      )}
     </div>
   );
 }
