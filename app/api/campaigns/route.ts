@@ -47,6 +47,8 @@ function serializeCampaign(campaign: Campaign): SerializedCampaign {
     advertiserId: campaign.advertiserId.toString(),
     budget: {
       amount: campaign.budget.amount.toString(),
+      spent: campaign.budget.spent.toString(),
+      cpaAmount: campaign.budget.cpaAmount.toString(),
       tokenAddress: campaign.budget.tokenAddress,
     },
     startTime: campaign.startTime.toString(),

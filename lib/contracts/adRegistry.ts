@@ -1,14 +1,14 @@
 /**
  * AdRegistry Contract Configuration
  *
- * Contract Address: 0x15dacc499e88c626ed715b5f77c7e5e201c8c805 (Base Mainnet)
+ * Contract Address: 0x82dc7de34418314de0853c787d3fb634342b3c58 (Base Mainnet)
  *
  * NOTE: This contract has been modified to allow publisher wallets to create ads.
  *
  * This contract allows publishers to create ad records when displaying campaigns.
  */
 
-export const AD_REGISTRY_ADDRESS = '0x15dacc499e88c626ed715b5f77c7e5e201c8c805' as const;
+export const AD_REGISTRY_ADDRESS = '0x82dc7de34418314de0853c787d3fb634342b3c58' as const;
 
 // TypeScript types for Ad (from blockchain)
 export interface Ad {
@@ -242,7 +242,7 @@ export const AD_REGISTRY_ABI = [
       {
         "name": "",
         "type": "address",
-        "internalType": "contract IIdentityRegistry"
+        "internalType": "contract IERC721"
       }
     ],
     "stateMutability": "view"
@@ -334,11 +334,6 @@ export const AD_REGISTRY_ABI = [
   },
   {
     "type": "error",
-    "name": "AdvertiserNotFound",
-    "inputs": []
-  },
-  {
-    "type": "error",
     "name": "CampaignNotActive",
     "inputs": []
   },
@@ -350,11 +345,6 @@ export const AD_REGISTRY_ABI = [
   {
     "type": "error",
     "name": "InvalidStartTime",
-    "inputs": []
-  },
-  {
-    "type": "error",
-    "name": "PublisherNotFound",
     "inputs": []
   },
   {

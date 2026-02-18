@@ -1,17 +1,17 @@
 /**
  * CampaignRegistry Contract Configuration
  *
- * Contract Address: 0x5348865d3b9cec0286c108c5254dc2d579a75eff (Base Mainnet)
+ * Contract Address: 0x8c2b543fa5d8740e40306e372dd4bcf6af3f5266 (Base Mainnet)
  * This contract allows advertisers to create and manage campaigns on the APEX network.
  */
 
-export const CAMPAIGN_REGISTRY_ADDRESS = '0x5348865d3b9cec0286c108c5254dc2d579a75eff' as const;
+export const CAMPAIGN_REGISTRY_ADDRESS = '0x8c2b543fa5d8740e40306e372dd4bcf6af3f5266' as const;
 
 // TypeScript types for Campaign (from blockchain)
 export interface Campaign {
   campaignId: bigint;
   advertiserId: bigint;
-  budget: { amount: bigint; tokenAddress: `0x${string}` };
+  budget: { amount: bigint; spent: bigint; cpaAmount: bigint; tokenAddress: `0x${string}` };
   startTime: bigint;
   expiryTime: bigint;
   spec: `0x${string}`;
@@ -29,7 +29,7 @@ export interface CampaignSpec {
 export interface SerializedCampaign {
   campaignId: string;
   advertiserId: string;
-  budget: { amount: string; tokenAddress: string };
+  budget: { amount: string; spent: string; cpaAmount: string; tokenAddress: string };
   startTime: string;
   expiryTime: string;
   spec: CampaignSpec | null;
@@ -85,6 +85,11 @@ export const CAMPAIGN_REGISTRY_ABI = [
         "name": "budgetTokenAddress",
         "type": "address",
         "internalType": "address"
+      },
+      {
+        "name": "cpaAmount",
+        "type": "uint256",
+        "internalType": "uint256"
       },
       {
         "name": "startTime",
@@ -148,6 +153,16 @@ export const CAMPAIGN_REGISTRY_ABI = [
                 "internalType": "uint256"
               },
               {
+                "name": "spent",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "cpaAmount",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
                 "name": "tokenAddress",
                 "type": "address",
                 "internalType": "address"
@@ -189,6 +204,25 @@ export const CAMPAIGN_REGISTRY_ABI = [
   },
   {
     "type": "function",
+    "name": "getCampaignRemainingBudget",
+    "inputs": [
+      {
+        "name": "campaignId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "remaining",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
     "name": "getCampaignsByAdvertiser",
     "inputs": [
       {
@@ -221,6 +255,25 @@ export const CAMPAIGN_REGISTRY_ABI = [
   },
   {
     "type": "function",
+    "name": "isActionProcessed",
+    "inputs": [
+      {
+        "name": "actionHash",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "processed",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
     "name": "isCampaignActive",
     "inputs": [
       {
@@ -240,6 +293,34 @@ export const CAMPAIGN_REGISTRY_ABI = [
   },
   {
     "type": "function",
+    "name": "processAction",
+    "inputs": [
+      {
+        "name": "campaignId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "publisherId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "validatorId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "actionHash",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
     "name": "updateCampaign",
     "inputs": [
       {
@@ -248,14 +329,9 @@ export const CAMPAIGN_REGISTRY_ABI = [
         "internalType": "uint256"
       },
       {
-        "name": "budgetAmount",
+        "name": "cpaAmount",
         "type": "uint256",
         "internalType": "uint256"
-      },
-      {
-        "name": "budgetTokenAddress",
-        "type": "address",
-        "internalType": "address"
       },
       {
         "name": "startTime",
@@ -281,6 +357,87 @@ export const CAMPAIGN_REGISTRY_ABI = [
       }
     ],
     "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "withdrawRemainingBudget",
+    "inputs": [
+      {
+        "name": "campaignId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "amountWithdrawn",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "event",
+    "name": "ActionProcessed",
+    "inputs": [
+      {
+        "name": "campaignId",
+        "type": "uint256",
+        "indexed": true,
+        "internalType": "uint256"
+      },
+      {
+        "name": "publisherId",
+        "type": "uint256",
+        "indexed": true,
+        "internalType": "uint256"
+      },
+      {
+        "name": "validatorId",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      },
+      {
+        "name": "paymentAmount",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      },
+      {
+        "name": "actionHash",
+        "type": "bytes32",
+        "indexed": false,
+        "internalType": "bytes32"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "BudgetWithdrawn",
+    "inputs": [
+      {
+        "name": "campaignId",
+        "type": "uint256",
+        "indexed": true,
+        "internalType": "uint256"
+      },
+      {
+        "name": "advertiserId",
+        "type": "uint256",
+        "indexed": true,
+        "internalType": "uint256"
+      },
+      {
+        "name": "amountWithdrawn",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
   },
   {
     "type": "event",
@@ -311,6 +468,12 @@ export const CAMPAIGN_REGISTRY_ABI = [
         "internalType": "address"
       },
       {
+        "name": "cpaAmount",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      },
+      {
         "name": "startTime",
         "type": "uint256",
         "indexed": false,
@@ -336,16 +499,10 @@ export const CAMPAIGN_REGISTRY_ABI = [
         "internalType": "uint256"
       },
       {
-        "name": "budgetAmount",
+        "name": "cpaAmount",
         "type": "uint256",
         "indexed": false,
         "internalType": "uint256"
-      },
-      {
-        "name": "budgetTokenAddress",
-        "type": "address",
-        "indexed": false,
-        "internalType": "address"
       },
       {
         "name": "startTime",
@@ -364,7 +521,17 @@ export const CAMPAIGN_REGISTRY_ABI = [
   },
   {
     "type": "error",
+    "name": "ActionAlreadyProcessed",
+    "inputs": []
+  },
+  {
+    "type": "error",
     "name": "CampaignAlreadyExpired",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "CampaignNotActive",
     "inputs": []
   },
   {
@@ -374,7 +541,22 @@ export const CAMPAIGN_REGISTRY_ABI = [
   },
   {
     "type": "error",
+    "name": "CampaignStillActive",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "InsufficientBudget",
+    "inputs": []
+  },
+  {
+    "type": "error",
     "name": "InvalidBudgetAmount",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "InvalidCpaAmount",
     "inputs": []
   },
   {
@@ -385,6 +567,11 @@ export const CAMPAIGN_REGISTRY_ABI = [
   {
     "type": "error",
     "name": "InvalidTokenAddress",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "TransferFailed",
     "inputs": []
   },
   {
