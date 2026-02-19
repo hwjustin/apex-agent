@@ -26,6 +26,8 @@ function getCampaignStatus(campaign: Campaign): "active" | "scheduled" | "ended"
   const now = BigInt(Math.floor(Date.now() / 1000));
   if (campaign.startTime > now) return "scheduled";
   if (campaign.expiryTime <= now) return "ended";
+  const remaining = campaign.budget.amount - campaign.budget.spent;
+  if (remaining < campaign.budget.cpaAmount) return "ended";
   return "active";
 }
 
