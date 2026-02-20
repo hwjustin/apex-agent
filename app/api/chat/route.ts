@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { GoogleGenAI } from "@google/genai";
 import { SerializedCampaign } from "@/lib/contracts/campaignRegistry";
 import { PURCHASE_CONFIG } from "@/lib/config/purchase";
+import { recordApiCost } from "@/lib/financials";
 
 // Whitelisted wallet addresses (same as frontend)
 const WHITELISTED_ADDRESSES = [
@@ -90,6 +91,16 @@ export async function POST(req: Request) {
         systemInstruction,
       },
     });
+
+    // Record API cost from usage metadata
+    const usageMetadata = (response as any).usageMetadata;
+    if (usageMetadata) {
+      recordApiCost(
+        usageMetadata.promptTokenCount ?? 0,
+        usageMetadata.candidatesTokenCount ?? 0,
+        usageMetadata.totalTokenCount ?? 0
+      );
+    }
 
     const raw = (response as any).text;
     const text =

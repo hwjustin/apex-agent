@@ -12,6 +12,7 @@ import { useAccount } from "wagmi";
 import { PurchaseCard } from "@/components/PurchaseCard";
 import { ProductDetails } from "@/lib/contracts/purchaseContract";
 import { detectAffirmativeResponse } from "@/lib/config/purchase";
+import { FinancialDashboard } from "@/components/FinancialDashboard";
 
 // Whitelisted wallet addresses that can send messages
 const WHITELISTED_ADDRESSES = [
@@ -437,6 +438,9 @@ export default function Home() {
             <WalletButton />
           </div>
         </div>
+
+        {/* Financial Dashboard */}
+        <FinancialDashboard />
       </aside>
 
       {/* Main chat area */}
