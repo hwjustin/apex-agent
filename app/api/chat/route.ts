@@ -53,6 +53,7 @@ Guidelines:
 - Never recommend campaigns just to fill a response - it's better to provide no recommendation than an irrelevant one
 - Always include the campaign link when recommending (if available)
 - You can recommend multiple campaigns if they are all relevant to the current discussion
+- If your response includes any campaign recommendation or ad, you MUST include "(sponsored content)" on a new line at the very end of your response
 - ${PURCHASE_CONFIG.purchasePrompt}`;
 }
 
