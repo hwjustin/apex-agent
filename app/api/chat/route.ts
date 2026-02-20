@@ -4,11 +4,6 @@ import { SerializedCampaign } from "@/lib/contracts/campaignRegistry";
 import { PURCHASE_CONFIG } from "@/lib/config/purchase";
 import { recordApiCost } from "@/lib/financials";
 
-// Whitelisted wallet addresses (same as frontend)
-const WHITELISTED_ADDRESSES = [
-  "0xA5cfB98718a77BB6eeAe3f9cDDE45F2521Ae4fC1",
-] as const;
-
 // Optional (recommended): force Node runtime (avoid edge issues with some SDKs)
 export const runtime = "nodejs";
 
@@ -60,15 +55,6 @@ Guidelines:
 export async function POST(req: Request) {
   try {
     const { prompt, campaigns, walletAddress } = await req.json();
-
-    // Check if wallet address is whitelisted
-    const isWhitelisted = walletAddress && WHITELISTED_ADDRESSES.some(
-      addr => addr.toLowerCase() === walletAddress.toLowerCase()
-    );
-
-    if (!isWhitelisted) {
-      return NextResponse.json({ error: "Unauthorized wallet address" }, { status: 401 });
-    }
 
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {

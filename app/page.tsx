@@ -14,11 +14,6 @@ import { ProductDetails } from "@/lib/contracts/purchaseContract";
 import { detectAffirmativeResponse } from "@/lib/config/purchase";
 import { FinancialDashboard } from "@/components/FinancialDashboard";
 
-// Whitelisted wallet addresses that can send messages
-const WHITELISTED_ADDRESSES = [
-  "0xA5cfB98718a77BB6eeAe3f9cDDE45F2521Ae4fC1",
-] as const;
-
 type AgentAction = {
   type: "fetch-campaigns" | "create-ad";
   status: "pending" | "success" | "error";
@@ -98,18 +93,13 @@ export default function Home() {
   // Wallet connection (user's wallet for authentication only)
   const { address: walletAddress, isConnected: isWalletConnected } = useAccount();
 
-  // Check if connected wallet is whitelisted
-  const isWhitelisted = walletAddress && WHITELISTED_ADDRESSES.some(
-    addr => addr.toLowerCase() === walletAddress.toLowerCase()
-  );
-
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Fetch campaigns only when a whitelisted wallet connects
+  // Fetch campaigns when a wallet connects
   useEffect(() => {
-    if (!isWhitelisted) {
+    if (!isWalletConnected) {
       setCampaigns([]);
       return;
     }
@@ -166,7 +156,7 @@ export default function Home() {
     };
 
     fetchCampaigns();
-  }, [isWhitelisted]);
+  }, [isWalletConnected]);
 
   // Helper function to detect if AI recommended a campaign
   function detectRecommendedCampaign(aiMessage: string, campaigns: SerializedCampaign[]): SerializedCampaign | null {
@@ -277,7 +267,7 @@ export default function Home() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     const trimmed = input.trim();
-    if (!trimmed || isLoading || !isWhitelisted) return;
+    if (!trimmed || isLoading || !isWalletConnected) return;
 
     // Check if user gave an affirmative response to purchase
     if (detectAffirmativeResponse(trimmed) && lastRecommendedCampaign) {
@@ -424,14 +414,9 @@ export default function Home() {
                   ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`
                   : "Not connected"}
               </div>
-              {isWalletConnected && !isWhitelisted && (
-                <div className="mt-1 text-[10px] text-amber-600">
-                  Not authorized
-                </div>
-              )}
-              {isWhitelisted && (
+              {isWalletConnected && (
                 <div className="mt-1 text-[10px] text-green-600">
-                  Authorized
+                  Connected
                 </div>
               )}
             </div>
@@ -525,17 +510,15 @@ export default function Home() {
                 placeholder={
                   !isWalletConnected
                     ? "Connect your wallet to chat..."
-                    : !isWhitelisted
-                    ? "Wallet not authorized..."
                     : "Ask me anything..."
                 }
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                disabled={!isWhitelisted}
+                disabled={!isWalletConnected}
               />
               <Button
                 type="submit"
-                disabled={!input.trim() || isLoading || !isWhitelisted}
+                disabled={!input.trim() || isLoading || !isWalletConnected}
                 className="rounded-full px-4 py-2 text-sm font-medium bg-[#FACC15] text-black hover:bg-[#FACC15]/90 disabled:opacity-50"
               >
                 <svg
