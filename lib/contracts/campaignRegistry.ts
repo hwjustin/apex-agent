@@ -1,11 +1,11 @@
 /**
  * CampaignRegistry Contract Configuration
  *
- * Contract Address: 0x8c2b543fa5d8740e40306e372dd4bcf6af3f5266 (Base Mainnet)
+ * Contract Address: 0x23ed7bbd9f4fb7d8fa98a13f1cce3484947cd689 (Base Mainnet)
  * This contract allows advertisers to create and manage campaigns on the APEX network.
  */
 
-export const CAMPAIGN_REGISTRY_ADDRESS = '0x8c2b543fa5d8740e40306e372dd4bcf6af3f5266' as const;
+export const CAMPAIGN_REGISTRY_ADDRESS = '0x23ed7bbd9f4fb7d8fa98a13f1cce3484947cd689' as const;
 
 // TypeScript types for Campaign (from blockchain)
 export interface Campaign {

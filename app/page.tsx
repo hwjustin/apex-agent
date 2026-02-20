@@ -239,11 +239,11 @@ export default function Home() {
   function campaignToProductDetails(campaign: SerializedCampaign): ProductDetails {
     const spec = campaign.spec;
     return {
-      productId: '1', // Using product ID 1 from DemoPurchase contract
+      productId: '2', // Using product ID 2 from DemoPurchase contract
       campaignId: campaign.campaignId,
       title: spec?.title || `Campaign #${campaign.campaignId}`,
       description: spec?.description || 'No description available',
-      price: '1.00', // Placeholder - actual price fetched from contract
+      price: '180.00', // Product price: 180 USDC
       currency: 'USDC',
       targetUrl: spec?.targetUrl,
     };
