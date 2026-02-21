@@ -94,7 +94,7 @@ async function pollActionProcessedEvents() {
 
     // On first poll, only look back ~50 blocks (~100 seconds) to avoid scanning too far
     if (lastPolledBlock === null) {
-      lastPolledBlock = currentBlock - BigInt(50);
+      lastPolledBlock = currentBlock;
     }
 
     if (currentBlock <= lastPolledBlock) return;
